@@ -682,7 +682,8 @@ function renderLateral() {
     c.innerHTML = `
       <label class="campo"><span>Estado</span><select id="l-estado">${['idea', 'borrador', 'revisado', 'terminado'].map(e => `<option value="${e}"${n.estado === e ? ' selected' : ''}>${e[0].toUpperCase() + e.slice(1)}</option>`).join('')}</select></label>
       <label class="campo"><span>De qué va (sinopsis)</span><textarea id="l-sin" rows="4" placeholder="En dos líneas: qué pasa y qué cambia">${esc(n.sinopsis)}</textarea></label>
-      <label class="campo"><span>Punto de vista</span><select id="l-pov"><option value="">—</option>${pjs.map(p => `<option value="${p.id}"${n.pov === p.id ? ' selected' : ''}>${esc(nombrePj(p))}</option>`).join('')}</select></label>
+      ${typeof cajaEscaleta === 'function' ? cajaEscaleta(n) : ''}
+      <label class="campo"><span>Punto de vista</span><select id="l-pov"><option value="">—</option>${pjs.map(p => `<option value="${p.id}"${n.pov === p.id ? ' selected' : ''}>${esc(nombrePj(p))}</option>`).join('')}<option value="dual"${n.pov === 'dual' ? ' selected' : ''}>Dual (los dos)</option></select></label>
       <label class="campo"><span>Cuándo pasa (en la historia)</span><input id="l-cuando" value="${esc(n.cuando || '')}" placeholder="Día 3, sábado por la noche…"></label>
       <label class="campo"><span>Notas de esta parte</span><textarea id="l-notas" rows="6" placeholder="Lo que no quieres olvidar al reescribir">${esc(n.notas)}</textarea></label>
       <p class="tenue" style="font-size:12px">Truco: escribe <b>* * *</b> en una línea para separar escenas dentro del capítulo, y <b>--</b> para la raya de diálogo.</p>`;

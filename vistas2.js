@@ -166,17 +166,18 @@ function exportarBiblia(pjs) {
 }
 
 // =====================================================================
-//  PLAN: Estructura romántica · Cronología · Cabos sueltos
+//  PLAN: Escaleta (escaleta.js) · Estructura romántica · Cronología · Cabos sueltos
 // =====================================================================
-let planTab = 'estructura';
+let planTab = 'escaleta';
 VISTAS.plan = (cont) => {
   cont.innerHTML = `<div class="pagina" style="max-width:1180px">
     <div class="fila sep" style="flex-wrap:wrap;align-items:flex-end;margin-bottom:22px"><div><h1>Plan de «${esc(proyecto().titulo)}»</h1></div>
-      <div class="segmentos">${[['estructura', 'Estructura romántica'], ['crono', 'Cronología'], ['cabos', 'Cabos sueltos']].map(([k, t]) => `<button data-pt="${k}"${planTab === k ? ' class="on"' : ''}>${t}</button>`).join('')}</div></div>
+      <div class="segmentos">${[['escaleta', 'Escaleta'], ['estructura', 'Estructura romántica'], ['crono', 'Cronología'], ['cabos', 'Cabos sueltos']].map(([k, t]) => `<button data-pt="${k}"${planTab === k ? ' class="on"' : ''}>${t}</button>`).join('')}</div></div>
     <div id="plan-cuerpo"></div></div>`;
   $$('[data-pt]', cont).forEach(b => b.onclick = () => { planTab = b.dataset.pt; VISTAS.plan(cont); });
   const c = $('#plan-cuerpo', cont);
-  if (planTab === 'estructura') pintarEstructura(c);
+  if (planTab === 'escaleta') pintarEscaleta(c);
+  else if (planTab === 'estructura') pintarEstructura(c);
   else if (planTab === 'crono') pintarCrono(c);
   else pintarCabos(c);
 };
@@ -952,7 +953,9 @@ VISTAS.ajustes = async (cont) => {
         <p style="margin:0 0 10px">${ultima ? 'Última copia: ' + new Date(ultima).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' }) : 'Todavía no hay ninguna copia. Haz una ahora.'}<br><span class="suave">Se guardan en tu carpeta de Descargas («Novelia Studio · Copia …»). Muévelas a Drive o a un USB de vez en cuando. Incluyen también el tablero.</span></p>
         <div class="fila" style="flex-wrap:wrap"><button class="btn prim" id="aj-copia">Hacer copia ahora</button>
           <label class="fila suave" style="font-size:13px">Copia automática <select id="aj-cd" class="txt" style="width:auto;padding:4px 8px">${[[1, 'cada día'], [3, 'cada 3 días'], [7, 'cada semana'], [0, 'nunca']].map(([v, t]) => `<option value="${v}"${A.copiaDias === v ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
-          <button class="btn" id="aj-rest">Restaurar desde una copia…</button><input type="file" id="aj-rest-f" accept=".json" hidden></div></div>
+          <button class="btn" id="aj-rest">Restaurar desde una copia…</button><input type="file" id="aj-rest-f" accept=".json" hidden></div>
+        <p style="margin:14px 0 8px" class="suave">¿Tienes la biblia de una novela (escaleta, personajes, cronología…)? Pásamela a Claude, te la devuelve en un archivo y la cargas aquí.</p>
+        <button class="btn" id="aj-biblia">Importar biblia…</button></div>
 
       <div class="tarjeta"><h2>Novelas</h2>
         ${M.proyectos.map(x => `<div class="fila sep" style="padding:8px 0;border-bottom:1px solid var(--linea)"><span style="font-family:var(--serif);font-size:17px">${esc(x.titulo)} <span class="tenue num" style="font-family:var(--sans);font-size:12.5px">${fmt(totalProyecto(x.id))} palabras</span></span>
@@ -984,6 +987,7 @@ VISTAS.ajustes = async (cont) => {
     if (r && r.ok) { aviso('Copia guardada en Descargas'); VISTAS.ajustes(cont); } else aviso('No he podido guardar la copia');
   };
   $('#aj-rest', cont).onclick = () => $('#aj-rest-f', cont).click();
+  $('#aj-biblia', cont).onclick = () => elegirBiblia();
   $('#aj-rest-f', cont).onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
     let j; try { j = JSON.parse(await f.text()); } catch (err) { aviso('Ese archivo no es una copia válida'); return; }
