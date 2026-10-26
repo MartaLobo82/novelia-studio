@@ -81,7 +81,8 @@ function metaNueva() {
     ideas: [], personajes: [], retos: [], banco: [], cabos: [], crono: [], estructura: {},
     etiquetas: ['Trama', 'Personajes', 'Escritura', 'Estructura'],
     stats: { dias: {}, sesiones: [], recordRacha: 0 },
-    perfil: { nombre: 'Marta Lobo', usuario: '@martalobo', genero: 'Romance', bio: '', enlaces: { instagram: '', tiktok: '', web: '' }, foto: '' },
+    perfil: { nombre: '', usuario: '', genero: '', bio: '', enlaces: { instagram: '', tiktok: '', web: '' }, foto: '' },
+    importadoTaller: 'oculto',
     ajustes: structuredClone(AJUSTES_DEF),
     sesion: null
   };
