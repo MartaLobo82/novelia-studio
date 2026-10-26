@@ -586,3 +586,78 @@ input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(-
   .esc-cuerpo { padding: 14px; }
   .esc-resumen { gap: 10px 16px; }
 }
+
+/* =================== Continuidad, versiones, dictado, calendario, sincro =================== */
+.ct-item { padding: 12px 16px; margin-bottom: 10px; }
+.ct-fila { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.ct-fila .campo { margin-bottom: 8px; }
+.ct-chips { margin-top: 4px; }
+.ct-chips .chip { font-size: 12.5px; padding: 2px 9px; }
+.chip.ct-siembra { border-color: #c9862b; }
+.chip.ct-recoge { border-color: var(--verde); }
+.chip.ct-secreto { cursor: default; }
+.chip.fuera { border-style: dashed; color: var(--tenue); }
+.caja-cont { border-color: color-mix(in srgb, #c9862b 40%, var(--linea)); }
+.ct-aviso { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin: 6px 0; cursor: default; }
+label.ct-aviso { cursor: pointer; }
+.ct-aviso input { margin-top: 3px; accent-color: var(--verde); }
+.ct-aviso small { display: block; color: var(--tenue); font-size: 12px; }
+.ct-aviso.ojo b { color: var(--rojo); }
+.vr { padding: 9px 0; border-bottom: 1px solid var(--linea); font-size: 13px; }
+.vr-nota { color: var(--suave); font-style: italic; }
+.vr-diff { font: 15px/1.65 var(--serif); max-height: 60vh; overflow: auto; background: var(--papel); border-radius: 10px; padding: 14px 16px; white-space: normal; }
+ins { background: color-mix(in srgb, var(--verde) 22%, transparent); text-decoration: none; border-radius: 3px; }
+del { background: color-mix(in srgb, var(--rojo) 20%, transparent); color: var(--suave); border-radius: 3px; }
+#btn-dictar.grabando { color: var(--hoja); background: var(--rojo); animation: latido 1.4s ease-in-out infinite; }
+@keyframes latido { 50% { opacity: .65; } }
+.dictado-prov { display: none; padding: 8px 16px; background: var(--panel); border-top: 1px solid var(--linea); color: var(--suave); font-style: italic; font-family: var(--serif); font-size: 15px; }
+.dictado-prov.on { display: block; }
+.cal-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+.cal { padding: 16px; }
+.cal-g { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-h { text-align: center; font-size: 11.5px; color: var(--tenue); font-weight: 600; padding: 2px 0 4px; }
+.cal-d { min-height: 98px; border: 1px solid var(--linea); border-radius: 9px; padding: 4px 5px; background: var(--hoja); cursor: pointer; min-width: 0; overflow: hidden; }
+.cal-d.vacia { border: 0; background: none; cursor: default; }
+.cal-d.libre { background: color-mix(in srgb, var(--panel) 60%, var(--hoja)); }
+.cal-d.pasado .cal-n span:first-child { color: var(--tenue); }
+.cal-d.hoy { border-color: var(--verde); box-shadow: inset 0 0 0 1px var(--verde); }
+.cal-d.sel { background: var(--verde-claro); }
+.cal-d.soltar { outline: 2px dashed var(--verde); }
+.cal-n { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+.cal-d.hoy .cal-n span:first-child { background: var(--verde); color: var(--hoja); border-radius: 999px; padding: 0 6px; }
+.cal-w { font-size: 10.5px; font-weight: 600; color: var(--verde); background: var(--verde-claro); border-radius: 999px; padding: 0 5px; }
+.cal-it { font-size: 11px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 5px; padding: 1px 4px; margin-bottom: 2px; color: var(--suave); }
+.cal-it.t-cap { background: color-mix(in srgb, var(--c) 16%, var(--hoja)); color: var(--tinta); border-left: 3px solid var(--c); cursor: grab; }
+.cal-it.t-cap.hecho { opacity: .5; text-decoration: line-through; }
+.cal-it.t-cap.tarde { border-left-color: var(--rojo); background: color-mix(in srgb, var(--rojo) 14%, var(--hoja)); }
+.cal-it.t-entrega, .cal-it.t-lanz { color: var(--rojo); font-weight: 600; }
+.cal-mas { font-size: 11px; color: var(--tenue); }
+.cal-ley { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--suave); align-items: center; }
+.cal-ley .cal-it { display: inline-block; margin: 0 4px 0 0; }
+.cal-panel { position: sticky; top: 16px; }
+.cal-li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--linea); font-size: 13.5px; }
+.cal-ico { width: 26px; height: 26px; border-radius: 7px; flex: none; display: grid; place-items: center; font-size: 13px; background: var(--panel); }
+.cal-li.t-cap .cal-ico { background: var(--c); color: #fff; font-weight: 600; }
+.cal-atr { margin-bottom: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sincro-pill { position: fixed; right: 14px; top: 10px; z-index: 30; border: 1px solid var(--linea); background: var(--hoja); color: var(--suave); border-radius: 999px; padding: 4px 11px; font-size: 12px; box-shadow: var(--sombra); }
+.sincro-pill.alerta { color: var(--rojo); border-color: var(--rojo); }
+.sincro-pill.girando { color: var(--verde); }
+.vista.escribir.on ~ .sincro-pill, body:has(#v-escribir.on) .sincro-pill { top: auto; bottom: 44px; }
+@media (max-width: 1000px) { .cal-wrap { grid-template-columns: minmax(0, 1fr); } .cal-panel { position: static; } }
+@media (max-width: 760px) {
+  .cal { padding: 10px 6px; }
+  .cal-g { gap: 2px; }
+  .cal-d { min-height: 62px; padding: 3px; border-radius: 6px; }
+  .cal-it { font-size: 0; height: 6px; padding: 0; margin-bottom: 2px; border-left-width: 0; background: var(--c, var(--linea-fuerte)); }
+  .cal-it.t-cap { background: var(--c); }
+  .cal-it.t-cap b { display: none; }
+  .cal-it:not(.t-cap) { background: var(--linea-fuerte); }
+  .cal-it.t-entrega, .cal-it.t-lanz, .cal-it.tarde { background: var(--rojo); }
+  .cal-w { font-size: 9.5px; padding: 0 3px; }
+  .cal-n { font-size: 11.5px; }
+  .cal-ley .cal-it { font-size: 11px; height: auto; padding: 1px 4px; }
+  .sincro-pill { top: auto; bottom: calc(var(--barra-movil) + 8px); right: 10px; }
+  body:has(#v-escribir.on) .sincro-pill { bottom: calc(var(--barra-movil) + 40px); }
+  .ct-fila > .campo { width: 100% !important; flex: 1 1 100% !important; }
+}
+.ct-mas summary { cursor: pointer; font-size: 12.5px; color: var(--suave); margin: 6px 0; }

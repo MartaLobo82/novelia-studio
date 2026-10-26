@@ -7,7 +7,7 @@
   const esMovil = () => matchMedia('(max-width: 760px)').matches;
   const rail = document.getElementById('rail');
   const vEsc = document.getElementById('v-escribir');
-  const PRINCIPALES = ['inicio', 'escribir', 'plan', 'personajes'];
+  const PRINCIPALES = ['inicio', 'escribir', 'plan', 'calendario'];
 
   // --- menú de abajo: 4 principales + «Más» ---
   [...rail.querySelectorAll('button[data-vista]')].forEach(b => { if (!PRINCIPALES.includes(b.dataset.vista)) b.classList.add('secundario'); });

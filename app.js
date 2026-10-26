@@ -459,6 +459,7 @@ function abrirNodo(id) {
     return;
   }
   ed.contentEditable = 'true';
+  if (nodoAbierto !== id && typeof fotoAlAbrir === 'function') fotoAlAbrir(id);
   nodoAbierto = id;
   M.sel[M.actual] = id; guardarMeta();
   ed.innerHTML = T[id] || '';
@@ -588,6 +589,7 @@ function eventosEditor() {
   $('#btn-panel').onclick = () => { $('#v-escribir').classList.toggle('sin-panel'); };
   $('#btn-foco').onclick = () => alternarFoco();
   $('#btn-sesion').onclick = () => modalSesion();
+  if ($('#btn-dictar')) $('#btn-dictar').onclick = () => alternarDictado();
   $('#reloj-fin').onclick = () => terminarSesion(true);
   $('#btn-proyectos').onclick = () => modalProyectos();
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#app').classList.contains('foco-total') && !$('.velo')) alternarFoco(false); });
@@ -682,6 +684,7 @@ function renderLateral() {
     c.innerHTML = `
       <label class="campo"><span>Estado</span><select id="l-estado">${['idea', 'borrador', 'revisado', 'terminado'].map(e => `<option value="${e}"${n.estado === e ? ' selected' : ''}>${e[0].toUpperCase() + e.slice(1)}</option>`).join('')}</select></label>
       <label class="campo"><span>De qué va (sinopsis)</span><textarea id="l-sin" rows="4" placeholder="En dos líneas: qué pasa y qué cambia">${esc(n.sinopsis)}</textarea></label>
+      ${typeof cajaContinuidad === 'function' ? cajaContinuidad(n) : ''}
       ${typeof cajaEscaleta === 'function' ? cajaEscaleta(n) : ''}
       <label class="campo"><span>Punto de vista</span><select id="l-pov"><option value="">—</option>${pjs.map(p => `<option value="${p.id}"${n.pov === p.id ? ' selected' : ''}>${esc(nombrePj(p))}</option>`).join('')}<option value="dual"${n.pov === 'dual' ? ' selected' : ''}>Dual (los dos)</option></select></label>
       <label class="campo"><span>Cuándo pasa (en la historia)</span><input id="l-cuando" value="${esc(n.cuando || '')}" placeholder="Día 3, sábado por la noche…"></label>
@@ -692,6 +695,9 @@ function renderLateral() {
     $('#l-pov').onchange = (e) => { n.pov = e.target.value; guardarMeta(); };
     $('#l-cuando').oninput = (e) => { n.cuando = e.target.value; guardarMeta(); };
     $('#l-notas').oninput = (e) => { n.notas = e.target.value; guardarMeta(); };
+    if (typeof enlazarContinuidad === 'function') enlazarContinuidad(c);
+  } else if (pestanaLateral === 'versiones') {
+    pintarVersiones(c, n);
   } else if (pestanaLateral === 'revision') {
     if (!revisando) {
       c.innerHTML = `<p class="suave" style="margin-top:0">Marca en el texto, sin tocarlo, lo que conviene mirar al revisar:</p>
@@ -714,12 +720,14 @@ function renderLateral() {
       ${r.larga ? `<h2>Frases largas</h2><ul class="lista-rev"><li data-t="larga"><span>Ir a la siguiente</span><span>${r.larga}</span></li></ul>` : ''}
       ${r.eco.length ? `<h2>Empiezan igual</h2>${lista('eco', r.eco)}` : ''}
       ${r.top.length ? `<h2>Las que más repites</h2>${lista('top', r.top)}` : ''}
+      ${typeof cajaNombres === 'function' ? cajaNombres(ultimoAnalisis.mapa.texto) : ''}
       <p class="tenue" style="font-size:12px">Clic en una palabra para saltar a cada aparición. Cambia la lista de muletillas en Ajustes.</p>`;
     $$('[data-mostrar]', c).forEach(ch => ch.onchange = () => { A.mostrar[ch.dataset.mostrar] = ch.checked; guardarMeta(); analizarYa(); });
     $$('li[data-t]', c).forEach(li => li.onclick = (e) => {
       if (e.target.closest('[data-ign]')) { const w = e.target.closest('[data-ign]').dataset.ign; A.ignorar = [...new Set([...(A.ignorar || []), w])]; guardarMeta(); analizarYa(); aviso(`«${w}» ya no se marcará`); return; }
       irAOcurrencia(li.dataset.t, li.dataset.k ?? null);
     });
+    if (typeof enlazarNombres === 'function') enlazarNombres(c);
   } else if (pestanaLateral === 'sinonimos') {
     c.innerHTML = `<input class="txt" id="l-sin-q" placeholder="Palabra… (o selecciónala en el texto)" style="margin-bottom:12px"><div class="sinonimos" id="l-sin-r"><p class="tenue">Selecciona una palabra en tu texto y aquí verás sus sinónimos. Clic en uno para cambiarla.</p></div>`;
     $('#l-sin-q').oninput = debounce((e) => { rangoGuardado = null; buscarSinonimos(e.target.value.trim()); }, 250);
@@ -992,7 +1000,7 @@ async function iniciar() {
   if (!M) { M = metaNueva(); await Store.set('mesa:meta', M); }
   M.ajustes = Object.assign(structuredClone(AJUSTES_DEF), M.ajustes || {});
   M.ajustes.mostrar = Object.assign({}, AJUSTES_DEF.mostrar, M.ajustes.mostrar || {});
-  ['ideas', 'personajes', 'retos', 'banco', 'cabos', 'crono'].forEach(k => M[k] = M[k] || []);
+  ['ideas', 'personajes', 'retos', 'banco', 'cabos', 'crono', 'siembras', 'secretos', 'eventos'].forEach(k => M[k] = M[k] || []);
   M.estructura = M.estructura || {};
   M.etiquetas = M.etiquetas || ['Trama', 'Personajes', 'Escritura', 'Estructura'];
   M.ideas.forEach(i => { if (i.cat && !M.etiquetas.includes(i.cat)) M.etiquetas.push(i.cat); });

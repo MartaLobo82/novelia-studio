@@ -172,11 +172,12 @@ let planTab = 'escaleta';
 VISTAS.plan = (cont) => {
   cont.innerHTML = `<div class="pagina" style="max-width:1180px">
     <div class="fila sep" style="flex-wrap:wrap;align-items:flex-end;margin-bottom:22px"><div><h1>Plan de «${esc(proyecto().titulo)}»</h1></div>
-      <div class="segmentos">${[['escaleta', 'Escaleta'], ['estructura', 'Estructura romántica'], ['crono', 'Cronología'], ['cabos', 'Cabos sueltos']].map(([k, t]) => `<button data-pt="${k}"${planTab === k ? ' class="on"' : ''}>${t}</button>`).join('')}</div></div>
+      <div class="segmentos">${[['escaleta', 'Escaleta'], ['estructura', 'Estructura romántica'], ['crono', 'Cronología'], ['continuidad', 'Continuidad'], ['cabos', 'Cabos sueltos']].map(([k, t]) => `<button data-pt="${k}"${planTab === k ? ' class="on"' : ''}>${t}</button>`).join('')}</div></div>
     <div id="plan-cuerpo"></div></div>`;
   $$('[data-pt]', cont).forEach(b => b.onclick = () => { planTab = b.dataset.pt; VISTAS.plan(cont); });
   const c = $('#plan-cuerpo', cont);
   if (planTab === 'escaleta') pintarEscaleta(c);
+  else if (planTab === 'continuidad') pintarContinuidad(c);
   else if (planTab === 'estructura') pintarEstructura(c);
   else if (planTab === 'crono') pintarCrono(c);
   else pintarCabos(c);
@@ -1007,7 +1008,7 @@ VISTAS.ajustes = async (cont) => {
     const x = M.proyectos.find(q => q.id === b.dataset.borrarP);
     if (!(await preguntar(`¿Borrar «${x.titulo}» entera?`, `Se borran sus ${fmt(totalProyecto(x.id))} palabras, capítulos, personajes, cabos, cronología y estructura. Esto no se puede deshacer (salvo con una copia de seguridad).`, 'Borrar novela', true))) return;
     nodosDe(x.id).forEach(n => { delete M.nodos[n.id]; delete T[n.id]; Store.remove('mesa:t:' + n.id); });
-    ['personajes', 'ideas', 'cabos', 'crono'].forEach(k => M[k] = M[k].filter(q => q.pid !== x.id));
+    ['personajes', 'ideas', 'cabos', 'crono', 'siembras', 'secretos', 'eventos'].forEach(k => M[k] = (M[k] || []).filter(q => q.pid !== x.id));
     delete M.estructura[x.id]; if (M.publicar) delete M.publicar[x.id];
     M.proyectos = M.proyectos.filter(q => q.id !== x.id); delete M.sel[x.id];
     if (M.actual === x.id) cambiarProyecto(M.proyectos[0].id);

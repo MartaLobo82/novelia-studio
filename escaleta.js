@@ -52,6 +52,7 @@ function pintarEscaleta(c) {
       <button class="btn peq" id="esc-importar">Importar biblia…</button>
       <button class="btn peq" id="esc-pdf">Imprimir / PDF</button>
     </div>
+    ${typeof avisoAtraso === 'function' ? avisoAtraso() : ''}
     <div class="fila" style="flex-wrap:wrap;margin:14px 0">
       <input class="txt" id="esc-q" placeholder="Buscar (bufanda, Rubén, campanario…)" value="${esc(escBusca)}" style="width:260px">
       <select class="txt" id="esc-fpov" style="width:auto;padding:6px 8px"><option value="">Todos los POV</option>${pjs.map(p => `<option value="${p.id}"${escPov === p.id ? ' selected' : ''}>${esc(nombrePj(p))}</option>`).join('')}<option value="dual"${escPov === 'dual' ? ' selected' : ''}>Dual</option></select>
@@ -83,6 +84,7 @@ function pintarEscaleta(c) {
   $('#esc-todo', c).onclick = () => { escAbiertos = escAbiertos.size ? new Set() : new Set(caps.map(n => n.id)); pintarEscaleta(c); };
   $('#esc-pdf', c).onclick = () => { escAbiertos = new Set(caps.map(n => n.id)); pintarEscaleta(c); setTimeout(() => window.print(), 100); };
   $('#esc-importar', c).onclick = elegirBiblia;
+  if (typeof enlazarAtraso === 'function') enlazarAtraso(c, () => pintarEscaleta(c));
   $('#esc-nuevo', c).onclick = () => {
     const id = uid();
     M.nodos[id] = { id, pid, padre: null, tipo: 'cap', titulo: `Capítulo ${caps.length + 1}`, orden: top.length + 1, estado: 'idea', sinopsis: '', pov: '', notas: '', palabras: 0, e: {} };
@@ -218,7 +220,8 @@ function modalBiblia(B) {
   const mismo = M.proyectos.find(p => p.titulo.trim().toLowerCase() === (B.titulo || '').trim().toLowerCase());
   const cuenta = [
     [B.capitulos, 'capítulo', 'capítulos', 'Escaleta'], [B.personajes, 'personaje', 'personajes', 'Personajes'], [B.crono, 'momento', 'momentos', 'Cronología'],
-    [B.cabos, 'cabo suelto', 'cabos sueltos', 'Cabos sueltos (decisiones y siembras)'], [B.notas, 'nota', 'notas', 'Libreta'],
+    [B.siembras, 'siembra', 'siembras', 'Continuidad'], [B.secretos, 'secreto', 'secretos', 'Continuidad'],
+    [B.cabos, 'cabo suelto', 'cabos sueltos', 'Cabos sueltos'], [B.notas, 'nota', 'notas', 'Libreta'],
   ].filter(([x]) => x && x.length);
   const cats = [...new Set((B.notas || []).map(n => n.cat))];
   modal(`<h3>Importar «${esc(B.titulo || 'biblia')}»</h3>
@@ -350,6 +353,15 @@ function aplicarBiblia(B, pidDestino, usarObjetivo) {
   let nCb = 0;
   (B.cabos || []).forEach((x, i) => { const id = idDe(x.id); if (yaCb.has(id)) return; M.cabos.push({ id, pid, text: x.text, prio: x.prio || 'media', due: x.due || '', done: !!x.done, doneAt: x.done ? diaStr() : null, created: ahora + i }); nCb++; });
   if (nCb) hecho.push(plural(nCb, 'cabo suelto', 'cabos sueltos'));
+
+  // --- continuidad: siembras y secretos ---
+  M.siembras = M.siembras || []; M.secretos = M.secretos || [];
+  const yaS = new Set([...M.siembras, ...M.secretos].map(e => e.id));
+  let nS = 0, nX = 0;
+  (B.siembras || []).forEach(x => { const id = idDe(x.id); if (yaS.has(id)) return; M.siembras.push({ id, pid, que: x.que || '', siembra: x.siembra || [], recoge: x.recoge || [], nota: x.nota || '', hecho: {} }); nS++; });
+  (B.secretos || []).forEach(x => { const id = idDe(x.id); if (yaS.has(id)) return; M.secretos.push({ id, pid, que: x.que || '', saben: x.saben || '', enteran: x.enteran || [], nota: x.nota || '' }); nX++; });
+  if (nS) hecho.push(plural(nS, 'siembra'));
+  if (nX) hecho.push(plural(nX, 'secreto'));
 
   // --- libreta ---
   const yaId = new Set(M.ideas.map(e => e.id));
