@@ -14,6 +14,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+  if (url.pathname.includes('/planner/')) return; // el Planner es otra app, con su propio service worker
   e.respondWith(caches.open(VERSION).then(async (c) => {
     const guardada = await c.match(e.request, { ignoreSearch: true });
     const red = fetch(e.request).then(r => { if (r && r.ok) c.put(e.request, r.clone()); return r; }).catch(() => null);
