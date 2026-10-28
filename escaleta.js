@@ -217,7 +217,8 @@ function elegirBiblia() {
 
 function modalBiblia(B) {
   const actual = proyecto();
-  const mismo = M.proyectos.find(p => p.titulo.trim().toLowerCase() === (B.titulo || '').trim().toLowerCase());
+  // Si solo trae personajes (o fichas sueltas), lo normal es meterlo en la novela abierta
+  const mismo = M.proyectos.find(p => p.titulo.trim().toLowerCase() === (B.titulo || '').trim().toLowerCase()) || (!(B.capitulos || []).length ? actual : null);
   const cuenta = [
     [B.capitulos, 'capítulo', 'capítulos', 'Escaleta'], [B.personajes, 'personaje', 'personajes', 'Personajes'], [B.crono, 'momento', 'momentos', 'Cronología'],
     [B.siembras, 'siembra', 'siembras', 'Continuidad'], [B.secretos, 'secreto', 'secretos', 'Continuidad'],
@@ -230,7 +231,8 @@ function modalBiblia(B) {
     ${cats.length ? `<p class="tenue" style="font-size:12.5px;margin:-4px 0 12px">En la libreta, con las etiquetas: ${cats.map(esc).join(', ')}.</p>` : ''}
     <div class="campo"><span>¿Dónde lo meto?</span>
       <label class="check"><input type="radio" name="dest" value="nueva"${mismo ? '' : ' checked'}><span>En una novela nueva: «${esc(B.titulo)}»</span></label>
-      <label class="check"><input type="radio" name="dest" value="${(mismo || actual).id}"${mismo ? ' checked' : ''}><span>En «${esc((mismo || actual).titulo)}»${mismo ? '' : ' (la que tienes abierta)'}</span></label></div>
+      <label class="check"><input type="radio" name="dest" value="${(mismo || actual).id}"${mismo ? ' checked' : ''}><span>En «${esc((mismo || actual).titulo)}»${(mismo || actual).id === actual.id ? ' (la que tienes abierta)' : ''}</span></label></div>
+    ${(B.personajes || []).length ? `<label class="check"><input type="checkbox" id="bi-act"><span>Si un personaje ya existe, actualizar su ficha con lo de esta biblia<small>Sin marcar, solo relleno lo que esté vacío y no cambio nada de lo que ya tienes.</small></span></label>` : ''}
     ${B.objetivo ? `<label class="check"><input type="checkbox" id="bi-obj" checked><span>Objetivo: ${fmt(B.objetivo)} palabras${B.fechaLimite ? ` para el ${fechaLarga(deStr(B.fechaLimite))}` : ''}</span></label>` : ''}
     <p class="suave" style="font-size:13px">No se borra nada y no toco lo que hayas escrito. Si la novela ya tiene capítulos, completo su escaleta en orden (el 1 con el 1…) y solo relleno lo que esté vacío. Si la importas dos veces, no se duplica.</p>
     <div class="pie"><button class="btn" data-cerrar>Cancelar</button><button class="btn prim" id="bi-ok">Importar</button></div>`, {
@@ -239,6 +241,7 @@ function modalBiblia(B) {
       $('#bi-ok', m).onclick = () => {
         const dest = $('input[name="dest"]:checked', m).value;
         const obj = $('#bi-obj', m) ? $('#bi-obj', m).checked : false;
+        B.actualizarPjs = $('#bi-act', m) ? $('#bi-act', m).checked : false;
         cerrar();
         try {
           const r = aplicarBiblia(B, dest === 'nueva' ? null : dest, obj);
@@ -268,20 +271,32 @@ function aplicarBiblia(B, pidDestino, usarObjetivo) {
   // --- personajes (se unen por el nombre) ---
   const norm = (s) => (s || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   const mios = () => M.personajes.filter(p => p.pid === pid);
-  let nPj = 0;
+  let nPj = 0, nAct = 0;
   (B.personajes || []).forEach(x => {
     const nombre = x.f && x.f.nombre; if (!nombre) return;
-    const ya = mios().find(p => norm(nombrePj(p)) === norm(nombre));
+    // se reconoce por el nombre o por un apodo («la madre de Mateo» = Asun)
+    const formas = (f) => [f.nombre, ...String(f.apodos || '').split(/[,;]/)].map(s => norm(String(s || '').replace(/\([^)]*\)/g, '')).replace(/^(el|la|los|las)\s+/, '').replace(/[«»"]/g, '').trim()).filter(s => s.length > 1);
+    const mias = formas(x.f);
+    const ya = mios().find(p => norm(nombrePj(p)) === norm(nombre)) || mios().find(p => formas(p.f).some(f => mias.includes(f)));
     if (ya) {
-      Object.entries(x.f).forEach(([k, v]) => { if (v && !ya.f[k]) ya.f[k] = v; });
+      Object.entries(x.f).forEach(([k, v]) => {
+        if (!v || k === 'nombre') return;
+        if (!ya.f[k]) ya.f[k] = v;
+        else if (B.actualizarPjs && k !== 'apodos' && ya.f[k] !== v) ya.f[k] = v;
+      });
       ya.extra = ya.extra || [];
-      (x.extra || []).forEach(d => { if (!ya.extra.some(e => norm(e.k) === norm(d.k))) ya.extra.push({ k: d.k, v: d.v }); });
+      (x.extra || []).forEach(d => {
+        const e = ya.extra.find(e => norm(e.k) === norm(d.k));
+        if (!e) ya.extra.push({ k: d.k, v: d.v }); else if (B.actualizarPjs && d.v) e.v = d.v;
+      });
+      nAct++;
     } else {
       M.personajes.push({ id: uid(), pid, color: COLORES_PJ[mios().length % COLORES_PJ.length], f: { ...x.f }, extra: (x.extra || []).map(d => ({ k: d.k, v: d.v })) });
       nPj++;
     }
   });
-  if (nPj) hecho.push(plural(nPj, 'personaje'));
+  if (nPj) hecho.push(plural(nPj, 'personaje nuevo', 'personajes nuevos'));
+  if (nAct) hecho.push(`${plural(nAct, 'ficha')} ${B.actualizarPjs ? 'actualizada' + (nAct === 1 ? '' : 's') : 'completada' + (nAct === 1 ? '' : 's')}`);
   const povId = (t) => {
     if (!t) return '';
     if (norm(t) === 'dual') return 'dual';
